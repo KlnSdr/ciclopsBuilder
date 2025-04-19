@@ -1,0 +1,14 @@
+{
+  "remoteRepoUrl": "https://repo.klnsdr.com",
+  "project": {
+    "entry": "ciclops.builder.Main",
+    "name": "ciclpopsBuilder",
+    "version": "1.0-SNAPSHOT",
+    "group": "dobby",
+    "dependencies": []
+  },
+  "compiler": {
+    "version": "21"
+  },
+  "exclude": []
+}
