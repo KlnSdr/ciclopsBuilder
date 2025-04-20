@@ -12,7 +12,7 @@ public class Pipeline {
         final String scm = "https://github.com/KlnSdr/test-pipeline.git";
         LOGGER.debug("Starting builder");
         LOGGER.debug("SCM URL: " + scm);
-        final String[] prePipelineCommands = {"git clone " + scm, "ls -la " + getProjectDir(scm), "podman image ls"};
+        final String[] prePipelineCommands = {"git clone " + scm};
 
         for (String command : prePipelineCommands) {
             LOGGER.debug("Executing command: " + command);
@@ -21,6 +21,15 @@ public class Pipeline {
                 return;
             }
         }
+
+        final String projectDir = getProjectDir(scm);
+        final PipelineConfig pipline = ProjectValidator.validateAndLoad(projectDir);
+
+        if (pipline == null) {
+            LOGGER.error("Pipeline configuration is invalid or not found.");
+            return;
+        }
+        LOGGER.debug("Pipeline configuration loaded successfully.");
     }
 
     private String getProjectDir(String scm) {
