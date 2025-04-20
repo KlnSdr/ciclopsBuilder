@@ -1,7 +1,13 @@
 package ciclops.builder;
 
+import common.logger.LogLevel;
+import common.logger.Logger;
+
 public class Main {
+    private static final Logger LOGGER = new Logger(Main.class);
+
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
+        Logger.setMaxLogLevel(LogLevel.DEBUG);
+        new Pipeline().run();
     }
 }
