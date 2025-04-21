@@ -23,13 +23,33 @@ public class Pipeline {
         }
 
         final String projectDir = getProjectDir(scm);
-        final PipelineConfig pipline = ProjectValidator.validateAndLoad(projectDir);
+        final PipelineConfig pipeline = ProjectValidator.validateAndLoad(projectDir);
 
-        if (pipline == null) {
+        if (pipeline == null) {
             LOGGER.error("Pipeline configuration is invalid or not found.");
             return;
         }
         LOGGER.debug("Pipeline configuration loaded successfully.");
+        final String pipelineCommand = pipeline.getCombinedCommand();
+        LOGGER.debug("Executing pipeline command: " + pipelineCommand);
+
+        if (pipeline.image() != null) {
+            runPipelineImage(pipeline.image(), pipelineCommand, projectDir);
+        } else {
+            runPipelineDockerFile(pipelineCommand);
+        }
+    }
+
+    private void runPipelineImage(String image, String command, String projectDir) {
+        String runCommand = "podman run  -v " + projectDir + ":/app/src --rm -it " + image + " sh -c \"" + command + "\"";
+        LOGGER.debug("Running pipeline image with command: " + runCommand);
+        if (!exec(runCommand)) {
+            LOGGER.error("Failed to run pipeline image with command: " + runCommand);
+        }
+    }
+
+    private void runPipelineDockerFile(String command) {
+        // TODO implement
     }
 
     private String getProjectDir(String scm) {

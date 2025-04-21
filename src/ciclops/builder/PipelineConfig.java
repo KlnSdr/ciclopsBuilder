@@ -5,6 +5,10 @@ import dobby.util.json.NewJson;
 import java.util.List;
 
 public record PipelineConfig(String image, String dockerfile, String[] defaultSteps, String[] releaseSteps) {
+    private static final String SEPARATOR = "==========================";
+    private static final String AND = " && ";
+    private static final String SPACE = " ";
+    private static final String QUOTE = "'";
 
     public static PipelineConfig load(NewJson json) {
         final String image = json.getString("image");
@@ -14,9 +18,7 @@ public record PipelineConfig(String image, String dockerfile, String[] defaultSt
         final List<Object> defaultSteps = pipeline.getList("default");
         final List<Object> releaseSteps = pipeline.getList("release");
 
-        return new PipelineConfig(image, dockerfile,
-                defaultSteps.stream().map(Object::toString).toArray(String[]::new),
-                releaseSteps.stream().map(Object::toString).toArray(String[]::new));
+        return new PipelineConfig(image, dockerfile, defaultSteps.stream().map(Object::toString).toArray(String[]::new), releaseSteps.stream().map(Object::toString).toArray(String[]::new));
     }
 
     public static boolean isValid(NewJson json) {
@@ -49,5 +51,24 @@ public record PipelineConfig(String image, String dockerfile, String[] defaultSt
         }
 
         return defaultSteps.stream().allMatch(o -> o instanceof String) && releaseSteps.stream().allMatch(o -> o instanceof String);
+    }
+
+    public String getCombinedCommand() {
+        final StringBuilder combinedCommand = new StringBuilder();
+
+        combinedCommand.append("cd src").append(SPACE).append(AND).append("echo").append(SPACE).append(QUOTE).append("start").append(SEPARATOR).append(QUOTE);
+
+        for (String step : defaultSteps) {
+            combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append(step).append(SEPARATOR).append(QUOTE).append(AND).append(step);
+        }
+        combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append("end").append(SEPARATOR).append(QUOTE);
+
+
+        return combinedCommand.toString();
+    }
+
+    public String getCombinedCommandRelease() {
+        // TODO: Implement
+        return "";
     }
 }
