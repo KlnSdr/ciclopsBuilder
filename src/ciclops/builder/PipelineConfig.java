@@ -5,7 +5,7 @@ import dobby.util.json.NewJson;
 import java.util.List;
 
 public record PipelineConfig(String image, String dockerfile, String[] defaultSteps, String[] releaseSteps) {
-    private static final String SEPARATOR = "==========================";
+    private static String SEPARATOR;
     private static final String AND = " && ";
     private static final String SPACE = " ";
     private static final String QUOTE = "'";
@@ -54,6 +54,7 @@ public record PipelineConfig(String image, String dockerfile, String[] defaultSt
     }
 
     public String getCombinedCommand() {
+        getSeparator();
         final StringBuilder combinedCommand = new StringBuilder();
 
         combinedCommand.append("cd src").append(SPACE).append(AND).append("echo").append(SPACE).append(QUOTE).append("start").append(SEPARATOR).append(QUOTE);
@@ -68,7 +69,17 @@ public record PipelineConfig(String image, String dockerfile, String[] defaultSt
     }
 
     public String getCombinedCommandRelease() {
+        getSeparator();
         // TODO: Implement
         return "";
+    }
+
+    private static void getSeparator() {
+        final String sep = System.getenv("SEPARATOR");
+        if (sep == null) {
+            SEPARATOR = "";
+            return;
+        }
+        SEPARATOR = sep;
     }
 }

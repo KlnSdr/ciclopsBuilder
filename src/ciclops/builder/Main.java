@@ -7,7 +7,7 @@ public class Main {
     private static final Logger LOGGER = new Logger(Main.class);
 
     public static void main(String[] args) {
-        Logger.setMaxLogLevel(LogLevel.DEBUG);
+        Logger.setMaxLogLevel(LogLevel.INFO);
         new Pipeline().run();
     }
 }
