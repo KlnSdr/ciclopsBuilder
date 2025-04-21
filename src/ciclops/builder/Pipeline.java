@@ -71,6 +71,7 @@ public class Pipeline {
             }
 
             int exitCode = process.waitFor();
+            LOGGER.info("|CICLOPS_EXIT_CODE:" + exitCode);
             if (exitCode != 0) {
                 LOGGER.error("Failed to execute command \"" + command + "\". Exit code: " + exitCode);
                 return false;
