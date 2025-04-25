@@ -60,7 +60,8 @@ public record PipelineConfig(String image, String dockerfile, String[] defaultSt
         combinedCommand.append("cd src").append(SPACE).append(AND).append("echo").append(SPACE).append(QUOTE).append("start").append(SEPARATOR).append(QUOTE);
 
         for (String step : defaultSteps) {
-            combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append(step).append(SEPARATOR).append(QUOTE).append(AND).append(step);
+            final String[] pipeSplit = step.split("\\|");
+            combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append(pipeSplit[pipeSplit.length - 1].trim()).append(SEPARATOR).append(QUOTE).append(AND).append(step).append(AND).append("echo");
         }
         combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append("end").append(SEPARATOR).append(QUOTE);
 

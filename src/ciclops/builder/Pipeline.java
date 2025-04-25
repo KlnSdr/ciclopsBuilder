@@ -9,8 +9,15 @@ public class Pipeline {
     private static final Logger LOGGER = new Logger(Pipeline.class);
 
     public void run() {
-        final String scm = "https://github.com/KlnSdr/test-pipeline.git";
         LOGGER.debug("Starting builder");
+        final String scm = System.getenv("SCM_URL");
+
+        if (scm == null || scm.isEmpty()) {
+            LOGGER.error("SCM_URL environment variable is not set.");
+            LOGGER.error("|CICLOPS_EXIT_CODE:1");
+            return;
+        }
+
         LOGGER.debug("SCM URL: " + scm);
         final String[] prePipelineCommands = {"git clone " + scm};
 
@@ -41,7 +48,7 @@ public class Pipeline {
     }
 
     private void runPipelineImage(String image, String command, String projectDir) {
-        String runCommand = "podman run  -v " + projectDir + ":/app/src --rm -it " + image + " sh -c \"" + command + "\"";
+        String runCommand = "podman run -v " + projectDir + ":/app/src --rm -it " + image + " sh -c \"" + command + "\"";
         LOGGER.debug("Running pipeline image with command: " + runCommand);
         if (!exec(runCommand)) {
             LOGGER.error("Failed to run pipeline image with command: " + runCommand);
