@@ -4,7 +4,7 @@ import dobby.util.json.NewJson;
 
 import java.util.List;
 
-public record PipelineConfig(String image, String dockerfile, String[] defaultSteps, String[] releaseSteps) {
+public record PipelineConfig(String image, String[] defaultSteps, String[] releaseSteps) {
     private static String SEPARATOR;
     private static final String AND = " && ";
     private static final String SPACE = " ";
@@ -12,21 +12,19 @@ public record PipelineConfig(String image, String dockerfile, String[] defaultSt
 
     public static PipelineConfig load(NewJson json) {
         final String image = json.getString("image");
-        final String dockerfile = json.getString("dockerfile");
-
         final NewJson pipeline = json.getJson("pipeline");
         final List<Object> defaultSteps = pipeline.getList("default");
         final List<Object> releaseSteps = pipeline.getList("release");
 
-        return new PipelineConfig(image, dockerfile, defaultSteps.stream().map(Object::toString).toArray(String[]::new), releaseSteps.stream().map(Object::toString).toArray(String[]::new));
+        return new PipelineConfig(image, defaultSteps.stream().map(Object::toString).toArray(String[]::new), releaseSteps.stream().map(Object::toString).toArray(String[]::new));
     }
 
     public static boolean isValid(NewJson json) {
-        if (!json.hasKey("pipeline") || !(json.hasKey("image") || json.hasKey("dockerfile"))) {
+        if (!json.hasKey("pipeline") || !(json.hasKey("image"))) {
             return false;
         }
 
-        if (json.getString("image") == null && json.getString("dockerfile") == null) {
+        if (json.getString("image") == null) {
             return false;
         }
 

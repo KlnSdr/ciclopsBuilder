@@ -40,11 +40,7 @@ public class Pipeline {
         final String pipelineCommand = pipeline.getCombinedCommand();
         LOGGER.debug("Executing pipeline command: " + pipelineCommand);
 
-        if (pipeline.image() != null) {
-            runPipelineImage(pipeline.image(), pipelineCommand, projectDir);
-        } else {
-            runPipelineDockerFile(pipelineCommand);
-        }
+        runPipelineImage(pipeline.image(), pipelineCommand, projectDir);
     }
 
     private void runPipelineImage(String image, String command, String projectDir) {
@@ -53,10 +49,6 @@ public class Pipeline {
         if (!exec(runCommand)) {
             LOGGER.error("Failed to run pipeline image with command: " + runCommand);
         }
-    }
-
-    private void runPipelineDockerFile(String command) {
-        // TODO implement
     }
 
     private String getProjectDir(String scm) {
