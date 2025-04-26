@@ -37,7 +37,15 @@ public class Pipeline {
             return;
         }
         LOGGER.debug("Pipeline configuration loaded successfully.");
-        final String pipelineCommand = pipeline.getCombinedCommand();
+
+        final String pipelineCommand;
+        LOGGER.debug(isRelease() ? "|Running release pipeline" : "|Running build pipeline");
+        if (isRelease()) {
+            pipelineCommand = pipeline.getCombinedCommandRelease(projectDir);
+            LOGGER.debug("|running release pipeline");
+        } else {
+            pipelineCommand = pipeline.getCombinedCommand();
+        }
         LOGGER.debug("Executing pipeline command: " + pipelineCommand);
 
         runPipelineImage(pipeline.image(), pipelineCommand, projectDir);
@@ -81,5 +89,10 @@ public class Pipeline {
             return false;
         }
         return true;
+    }
+
+    private boolean isRelease() {
+        LOGGER.debug(System.getProperty("RELEASE"));
+        return System.getenv("RELEASE") != null && System.getenv("RELEASE").equalsIgnoreCase("true");
     }
 }

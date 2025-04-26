@@ -8,13 +8,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import static ciclops.builder.FileUtil.hasFile;
+
 public class ProjectValidator {
     private static final Logger LOGGER = new Logger(ProjectValidator.class);
 
     public static PipelineConfig validateAndLoad(String projectDir) {
         final String configFilePath = projectDir + "/pipeline.json";
 
-        if (!new File(configFilePath).exists() || !new File(configFilePath).isFile()) {
+        if (!hasFile(configFilePath)) {
             throw new IllegalArgumentException("Pipeline configuration file not found: " + configFilePath);
         }
 

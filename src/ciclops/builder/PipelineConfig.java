@@ -4,11 +4,13 @@ import dobby.util.json.NewJson;
 
 import java.util.List;
 
+import static ciclops.builder.FileUtil.hasFile;
+
 public record PipelineConfig(String image, String[] defaultSteps, String[] releaseSteps) {
-    private static String SEPARATOR;
     private static final String AND = " && ";
     private static final String SPACE = " ";
     private static final String QUOTE = "'";
+    private static String SEPARATOR;
 
     public static PipelineConfig load(NewJson json) {
         final String image = json.getString("image");
@@ -51,6 +53,15 @@ public record PipelineConfig(String image, String[] defaultSteps, String[] relea
         return defaultSteps.stream().allMatch(o -> o instanceof String) && releaseSteps.stream().allMatch(o -> o instanceof String);
     }
 
+    private static void getSeparator() {
+        final String sep = System.getenv("SEPARATOR");
+        if (sep == null) {
+            SEPARATOR = "";
+            return;
+        }
+        SEPARATOR = sep;
+    }
+
     public String getCombinedCommand() {
         getSeparator();
         final StringBuilder combinedCommand = new StringBuilder();
@@ -67,18 +78,28 @@ public record PipelineConfig(String image, String[] defaultSteps, String[] relea
         return combinedCommand.toString();
     }
 
-    public String getCombinedCommandRelease() {
+    public String getCombinedCommandRelease(String projectDir) {
         getSeparator();
-        // TODO: Implement
-        return "";
-    }
+        final StringBuilder combinedCommand = new StringBuilder();
 
-    private static void getSeparator() {
-        final String sep = System.getenv("SEPARATOR");
-        if (sep == null) {
-            SEPARATOR = "";
-            return;
+        combinedCommand.append("cd src").append(SPACE).append(AND).append("echo").append(SPACE).append(QUOTE).append("start").append(SEPARATOR).append(QUOTE);
+
+        if (hasFile(projectDir + "/prerelease.sh")) {
+            combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append("pre-release").append(SEPARATOR).append(QUOTE).append(AND).append("sh prerelease.sh").append(AND).append("echo");
         }
-        SEPARATOR = sep;
+
+        for (String step : releaseSteps) {
+            final String[] pipeSplit = step.split("\\|");
+            combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append(pipeSplit[pipeSplit.length - 1].trim()).append(SEPARATOR).append(QUOTE).append(AND).append(step).append(AND).append("echo");
+        }
+
+        if (hasFile(projectDir + "/postrelease.sh")) {
+            combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append("post-release").append(SEPARATOR).append(QUOTE).append(AND).append("sh postrelease.sh").append(AND).append("echo");
+        }
+
+        combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append("end").append(SEPARATOR).append(QUOTE);
+
+
+        return combinedCommand.toString();
     }
 }
