@@ -5,10 +5,14 @@ import common.logger.Logger;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import static ciclops.builder.FileUtil.hasFile;
+import static ciclops.builder.PipelineConfig.*;
+
 public class Pipeline {
     private static final Logger LOGGER = new Logger(Pipeline.class);
 
     public void run() {
+        getSeparator();
         LOGGER.debug("Starting builder");
         final String scm = System.getenv("SCM_URL");
 
@@ -19,14 +23,27 @@ public class Pipeline {
         }
 
         LOGGER.debug("SCM URL: " + scm);
-        final String[] prePipelineCommands = {"git clone " + scm};
+        final String checkoutCommand = new StringBuilder()
+                .append("echo")
+                .append(SPACE)
+                .append(QUOTE)
+                .append("scm checkout")
+                .append(SEPARATOR)
+                .append(QUOTE)
+                .append(AND)
+                .append("git")
+                .append(SPACE)
+                .append("clone")
+                .append(SPACE)
+                .append(scm)
+                .append(AND)
+                .append("echo")
+                .toString();
 
-        for (String command : prePipelineCommands) {
-            LOGGER.debug("Executing command: " + command);
-            if (!exec(command)) {
-                LOGGER.error("Command failed: " + command);
-                return;
-            }
+        LOGGER.debug("Executing command: " + checkoutCommand);
+        if (!exec(checkoutCommand)) {
+            LOGGER.error("Command failed: " + checkoutCommand);
+            return;
         }
 
         final String projectDir = getProjectDir(scm);
@@ -38,17 +55,77 @@ public class Pipeline {
         }
         LOGGER.debug("Pipeline configuration loaded successfully.");
 
-        final String pipelineCommand;
+        final String pipelineCommand = pipeline.getCombinedCommand();
         LOGGER.debug(isRelease() ? "|Running release pipeline" : "|Running build pipeline");
-        if (isRelease()) {
-            pipelineCommand = pipeline.getCombinedCommandRelease(projectDir);
-            LOGGER.debug("|running release pipeline");
-        } else {
-            pipelineCommand = pipeline.getCombinedCommand();
+
+        if (isRelease() && hasFile(projectDir + "/prerelease.sh")) {
+            LOGGER.debug("|running pre release script");
+
+            getSeparator();
+            final String preReleaseCommand = new StringBuilder()
+                    .append("echo")
+                    .append(SPACE)
+                    .append(QUOTE)
+                    .append("pre-release")
+                    .append(SEPARATOR)
+                    .append(QUOTE)
+                    .append(AND)
+                    .append("sh")
+                    .append(SPACE)
+                    .append(projectDir)
+                    .append("/prerelease.sh")
+                    .append(AND)
+                    .append("echo")
+                    .toString();
+
+            if (!exec(preReleaseCommand)) {
+                LOGGER.error("Pre-release script failed.");
+                return;
+            }
         }
+
         LOGGER.debug("Executing pipeline command: " + pipelineCommand);
 
+        final String pullSeparatorCommand = new StringBuilder()
+                .append("echo")
+                .append(SPACE)
+                .append(QUOTE)
+                .append("pod init")
+                .append(SEPARATOR)
+                .append(QUOTE)
+                .append(AND)
+                .append("echo")
+                .toString();
+
+        LOGGER.debug("Executing command: " + pullSeparatorCommand);
+        exec(pullSeparatorCommand);
+
         runPipelineImage(pipeline.image(), pipelineCommand, projectDir);
+
+        if (isRelease() && hasFile(projectDir + "/postrelease.sh")) {
+            LOGGER.debug("|running post release script");
+
+            getSeparator();
+            final String postReleaseCommand = new StringBuilder()
+                    .append("echo")
+                    .append(SPACE)
+                    .append(QUOTE)
+                    .append("post-release")
+                    .append(SEPARATOR)
+                    .append(QUOTE)
+                    .append(AND)
+                    .append("sh")
+                    .append(SPACE)
+                    .append(projectDir)
+                    .append("/postrelease.sh")
+                    .append(AND)
+                    .append("echo")
+                    .toString();
+
+            if (!exec(postReleaseCommand)) {
+                LOGGER.error("Pre-release script failed.");
+            }
+        }
     }
 
     private void runPipelineImage(String image, String command, String projectDir) {
