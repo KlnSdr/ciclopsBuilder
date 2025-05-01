@@ -1,0 +1,1 @@
+docker build -t ciclopsbuilder:1.0 .
