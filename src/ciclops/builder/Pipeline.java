@@ -23,22 +23,20 @@ public class Pipeline {
         }
 
         LOGGER.debug("SCM URL: " + scm);
-        final String checkoutCommand = new StringBuilder()
-                .append("echo")
-                .append(SPACE)
-                .append(QUOTE)
-                .append("scm checkout")
-                .append(SEPARATOR)
-                .append(QUOTE)
-                .append(AND)
-                .append("git")
-                .append(SPACE)
-                .append("clone")
-                .append(SPACE)
-                .append(scm)
-                .append(AND)
-                .append("echo")
-                .toString();
+        final String checkoutCommand = "echo" +
+                SPACE +
+                QUOTE +
+                "scm checkout" +
+                SEPARATOR +
+                QUOTE +
+                AND +
+                "git" +
+                SPACE +
+                "clone" +
+                SPACE +
+                scm +
+                AND +
+                "echo";
 
         LOGGER.debug("Executing command: " + checkoutCommand);
         if (!exec(checkoutCommand)) {
@@ -62,21 +60,19 @@ public class Pipeline {
             LOGGER.debug("|running pre release script");
 
             getSeparator();
-            final String preReleaseCommand = new StringBuilder()
-                    .append("echo")
-                    .append(SPACE)
-                    .append(QUOTE)
-                    .append("pre-release")
-                    .append(SEPARATOR)
-                    .append(QUOTE)
-                    .append(AND)
-                    .append("sh")
-                    .append(SPACE)
-                    .append(projectDir)
-                    .append("/prerelease.sh")
-                    .append(AND)
-                    .append("echo")
-                    .toString();
+            final String preReleaseCommand = "echo" +
+                    SPACE +
+                    QUOTE +
+                    "pre-release" +
+                    SEPARATOR +
+                    QUOTE +
+                    AND +
+                    "sh" +
+                    SPACE +
+                    projectDir +
+                    "/prerelease.sh" +
+                    AND +
+                    "echo";
 
             if (!exec(preReleaseCommand)) {
                 LOGGER.error("Pre-release script failed.");
@@ -86,16 +82,14 @@ public class Pipeline {
 
         LOGGER.debug("Executing pipeline command: " + pipelineCommand);
 
-        final String pullSeparatorCommand = new StringBuilder()
-                .append("echo")
-                .append(SPACE)
-                .append(QUOTE)
-                .append("pod init")
-                .append(SEPARATOR)
-                .append(QUOTE)
-                .append(AND)
-                .append("echo")
-                .toString();
+        final String pullSeparatorCommand = "echo" +
+                SPACE +
+                QUOTE +
+                "pod init" +
+                SEPARATOR +
+                QUOTE +
+                AND +
+                "echo";
 
         LOGGER.debug("Executing command: " + pullSeparatorCommand);
         exec(pullSeparatorCommand);
@@ -106,21 +100,19 @@ public class Pipeline {
             LOGGER.debug("|running post release script");
 
             getSeparator();
-            final String postReleaseCommand = new StringBuilder()
-                    .append("echo")
-                    .append(SPACE)
-                    .append(QUOTE)
-                    .append("post-release")
-                    .append(SEPARATOR)
-                    .append(QUOTE)
-                    .append(AND)
-                    .append("sh")
-                    .append(SPACE)
-                    .append(projectDir)
-                    .append("/postrelease.sh")
-                    .append(AND)
-                    .append("echo")
-                    .toString();
+            final String postReleaseCommand = "echo" +
+                    SPACE +
+                    QUOTE +
+                    "post-release" +
+                    SEPARATOR +
+                    QUOTE +
+                    AND +
+                    "sh" +
+                    SPACE +
+                    projectDir +
+                    "/postrelease.sh" +
+                    AND +
+                    "echo";
 
             if (!exec(postReleaseCommand)) {
                 LOGGER.error("Pre-release script failed.");
