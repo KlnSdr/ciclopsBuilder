@@ -121,7 +121,7 @@ public class Pipeline {
     }
 
     private void runPipelineImage(String image, String command, String projectDir) {
-        String runCommand = "podman run -v " + projectDir + ":/app/src --rm -it " + image + " sh -c \"" + command + "\"";
+        String runCommand = "podman run --net=host -v " + projectDir + ":/app/src --rm -it " + image + " sh -c \"" + command + "\"";
         LOGGER.debug("Running pipeline image with command: " + runCommand);
         if (!exec(runCommand)) {
             LOGGER.error("Failed to run pipeline image with command: " + runCommand);
