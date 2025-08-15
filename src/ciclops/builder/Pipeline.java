@@ -53,7 +53,7 @@ public class Pipeline {
         }
         LOGGER.debug("Pipeline configuration loaded successfully.");
 
-        final String pipelineCommand = pipeline.getCombinedCommand();
+        final String pipelineCommand = pipeline.getCombinedCommand(isRelease());
         LOGGER.debug(isRelease() ? "|Running release pipeline" : "|Running build pipeline");
 
         if (isRelease() && hasFile(projectDir + "/prerelease.sh")) {
@@ -67,10 +67,13 @@ public class Pipeline {
                     SEPARATOR +
                     QUOTE +
                     AND +
-                    "sh" +
+                    "cd" +
                     SPACE +
                     projectDir +
-                    "/prerelease.sh" +
+                    AND +
+                    "sh" +
+                    SPACE +
+                    "prerelease.sh" +
                     AND +
                     "echo";
 
@@ -107,10 +110,13 @@ public class Pipeline {
                     SEPARATOR +
                     QUOTE +
                     AND +
-                    "sh" +
+                    "cd" +
                     SPACE +
                     projectDir +
-                    "/postrelease.sh" +
+                    AND +
+                    "sh" +
+                    SPACE +
+                    "postrelease.sh" +
                     AND +
                     "echo";
 
@@ -121,7 +127,7 @@ public class Pipeline {
     }
 
     private void runPipelineImage(String image, String command, String projectDir) {
-        String runCommand = "podman run --net=host -v " + projectDir + ":/app/src --rm -it " + image + " sh -c \"" + command + "\"";
+        String runCommand = "podman run --net=host -v /root/.ssh:/root.ssh:ro -v " + projectDir + ":/app/src --rm -it " + image + " sh -c \"" + command + "\"";
         LOGGER.debug("Running pipeline image with command: " + runCommand);
         if (!exec(runCommand)) {
             LOGGER.error("Failed to run pipeline image with command: " + runCommand);

@@ -60,13 +60,23 @@ public record PipelineConfig(String image, String[] defaultSteps, String[] relea
         SEPARATOR = sep;
     }
 
-    public String getCombinedCommand() {
+    public String getCombinedCommand(boolean isRelease) {
         getSeparator();
         final StringBuilder combinedCommand = new StringBuilder();
 
+        final String gitUsername = System.getenv("GIT_USER");
+        final String gitMail = System.getenv("GIT_EMAIL");
+
+        if (gitUsername != null && gitMail != null) {
+            combinedCommand.append("git config --global user.name ").append(QUOTE).append(gitUsername).append(QUOTE).append(AND)
+                           .append("git config --global user.email ").append(QUOTE).append(gitMail).append(QUOTE).append(AND);
+        }
+
         combinedCommand.append("cd src").append(SPACE).append(AND).append("echo").append(SPACE).append(QUOTE).append("start").append(SEPARATOR).append(QUOTE);
 
-        for (String step : defaultSteps) {
+        final String[] steps = isRelease ? releaseSteps : defaultSteps;
+
+        for (String step : steps) {
             final String[] pipeSplit = step.split("\\|");
             combinedCommand.append(AND).append("echo").append(SPACE).append(QUOTE).append(pipeSplit[pipeSplit.length - 1].trim()).append(SEPARATOR).append(QUOTE).append(AND).append(step).append(AND).append("echo");
         }
