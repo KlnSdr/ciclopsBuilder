@@ -14,6 +14,6 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY --from=builder /app/build/ciclopsBuilder-1.0.jar /app/app.jar
+COPY --from=builder /app/build/ciclopsBuilder-1.1.jar /app/app.jar
 
 CMD ["java", "-jar", "app.jar"]
